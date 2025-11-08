@@ -21,7 +21,7 @@ app.get('/', function (req, res) {
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname + "/public"));
 
-//testing 9
+//testing 10
 //https://threejs.org/manual/#en/creating-a-scene
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
