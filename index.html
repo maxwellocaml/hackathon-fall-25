@@ -2,12 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Collection File Structure demo</title>
-    <style>
-        body { margin: 0; }
-    </style>
+    <link
+        rel="icon"
+        type="image/jpg"
+        href="/assets/slappy.jpg"
+    />
+    <link rel="stylesheet" href="/css/index.css">
+<!--    <style>-->
+<!--        body { margin: 0; }-->
+<!--    </style>-->
 </head>
 <body>
-<script type="module" src="/index.js"></script>
+    <div id="grid" >
+        <div class="column" id="col1">
+            <div class="cell"><span>Column 1</span></div>
+            <div class="resize-handle-x"></div>
+        </div>
+
+        <div class="column middle-column" id="col2" >
+            <div class="cell">
+                <span>Row 1</span>
+                <div class="resize-handle-y"></div>
+            </div>
+            <div class="cell" id="canvas-container">
+                <div class="resize-handle-y"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/index.js"></script>
+<!--    <h1>Collection File Structure demo</h1>-->
 </body>
 </html>
