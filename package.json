@@ -2,13 +2,13 @@
   "name": "hackathonfall25",
   "version": "1.0.0",
   "description": "turn real life collections into file structure",
-  "homepage": "https://github.com/Maxwellwellium/hackathon-fall-25#readme",
+  "homepage": "https://github.com/maxwellocaml/hackathon-fall-25#readme",
   "bugs": {
-    "url": "https://github.com/Maxwellwellium/hackathon-fall-25/issues"
+    "url": "https://github.com/maxwellocaml/hackathon-fall-25/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Maxwellwellium/hackathon-fall-25.git"
+    "url": "git+https://github.com/maxwellocaml/hackathon-fall-25.git"
   },
   "license": "ISC",
   "author": "maxwell d",
