@@ -1,0 +1,30 @@
+{
+  "name": "hackathonfall25",
+  "version": "1.0.0",
+  "description": "turn real life collections into file structure",
+  "homepage": "https://github.com/maxwellocaml/hackathon-fall-25#readme",
+  "bugs": {
+    "url": "https://github.com/maxwellocaml/hackathon-fall-25/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maxwellocaml/hackathon-fall-25.git"
+  },
+  "license": "ISC",
+  "author": "maxwell d",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.19.3",
+    "three": "^0.181.0"
+  },
+  "devDependencies": {
+    "vite": "^7.2.2"
+  }
+}
