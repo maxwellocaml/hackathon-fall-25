@@ -21,7 +21,7 @@ mongoose.connect('mongodb://localhost:27017/movieDB', {})
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname + "/public"));
 
-//testing
+//testing 2
 //https://threejs.org/manual/#en/creating-a-scene
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
