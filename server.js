@@ -119,18 +119,20 @@ app.post('/create-Container', function (req, res) {
 });
 
 app.post('/create-Rock', function (req, res) {
-    const containerInfo = {
-        name: req.body.name,
-        capacity: (req.body.length * req.body.width * req.body.height),
-        fulfilled: 0, //empty upon creation
-        contents: [] //empty array upon creation
+    const rockInfo = {
+        mineral: req.body.mineral,
+        totalWeight: req.body.totalWeight,
+        amount: req.body.amount,
+        processed: req.body.processed,
+        url: req.body.url
     }
-    console.log(containerInfo)
 
-    //create container
-    const newContainer = new Container(containerInfo);
-    newContainer.save().then(container => {
-        console.log(container._id);
+    console.log(rockInfo)
+
+    //create rock
+    const newRock = new Rock(rockInfo);
+    newRock.save().then(rock => {
+        console.log(rock._id);
         res.send({"message": "success"});
     }).catch(err => {
         console.log(err);

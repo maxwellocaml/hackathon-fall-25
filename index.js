@@ -280,6 +280,7 @@ scene.add(hemiLight);
 
 
 function animate(time) {
+    //dragObject();
     renderer.render(scene, camera);
     // Render the Gizmo
     gizmo.render();
@@ -479,7 +480,8 @@ export function onCreateContainer() {
     console.log(containerWidth);
     console.log(containerLength);
 
-    const container = createContainer(containerWidth, containerHeight, containerLength, 1, 1, 1);
+    const container = createContainer(containerWidth, containerHeight, containerLength,
+        Math.random() * 20, Math.random() * 20, Math.random() * 20);
     $.post('/create-Container', {
         //_id: container.uuid,
         name: containerName,
@@ -490,7 +492,6 @@ export function onCreateContainer() {
             console.log(data.message);
             if(data.message==='success') {
                 scene.add(container);
-                //renderer.render(scene, camera);
             }
         })
 
@@ -501,27 +502,24 @@ export function onCreateContainer() {
 export function onCreateRock() {
     event.preventDefault();
     console.log("creating rock");
-    const containerName = document.getElementById("containerName").value
-    const containerHeight = document.getElementById("containerHeight").value
-    const containerWidth = document.getElementById("containerWidth").value
-    const containerLength = document.getElementById("containerLength").value
-    console.log(containerName);
-    console.log(containerHeight);
-    console.log(containerWidth);
-    console.log(containerLength);
+    const rockMineral = document.getElementById("rockMineral").value
+    const rockTotalWeight = document.getElementById("rockTotalWeight").value
+    const rockAmount = document.getElementById("rockAmount").value
+    const rockProcessed = document.getElementById("rockProcessed").value
+    const rockUrl = document.getElementById("rockUrl").value
 
-    const container = createContainer(containerWidth, containerHeight, containerLength, 1, 1, 1);
-    $.post('/create-Container', {
-        //_id: container.uuid,
-        name: containerName,
-        height: containerHeight,
-        width: containerWidth,
-        length: containerLength
+
+    const rock = createObject(Math.random() * 20, Math.random() * 20, Math.random() * 20)
+    $.post('/create-Rock', {
+        mineral: rockMineral,
+        totalWeight: rockTotalWeight,
+        amount: rockAmount,
+        processed: rockProcessed,
+        url: rockUrl
     }).done(function (data) {
         console.log(data.message);
         if(data.message==='success') {
-            scene.add(container);
-            //renderer.render(scene, camera);
+            scene.add(rock);
         }
     })
 

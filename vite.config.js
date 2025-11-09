@@ -10,7 +10,8 @@ export default defineConfig({
             '/create-Container': 'http://127.0.0.1:3000',
             '/addNewObj': 'http://127.0.0.1:3000',
             '/getAllObjs': 'http://127.0.0.1:3000',
-            '/deleteObj': 'http://127.0.0.1:3000'
+            '/deleteObj': 'http://127.0.0.1:3000',
+            '/create-Rock': 'http://127.0.0.1:3000',
         }
     },
 });
