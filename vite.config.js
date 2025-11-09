@@ -6,9 +6,12 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         port: 8000, // Specify the Vite dev server port
         proxy: {
-            '/api': 'http://127.0.0.1:3000', // Proxy API requests to the Node.js server
-            '/create-Container': 'http://127.0.0.1:3000', // Proxy API requests to the Node.js server
+            '/api': 'http://127.0.0.1:3000',
+            '/create-Container': 'http://127.0.0.1:3000',
+            '/addNewObj': 'http://127.0.0.1:3000',
+            '/getAllObjs': 'http://127.0.0.1:3000',
+            '/deleteObj': 'http://127.0.0.1:3000',
             '/create-Rock': 'http://127.0.0.1:3000',
-        },
+        }
     },
 });
