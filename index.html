@@ -28,7 +28,7 @@
     <!--    Google jQuery-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-    <script src="/public/js/userEditItems.js" defer></script>
+    <script src="/js/userEditItems.js" defer></script>
     <script type="module" src="/index.js" defer></script>
 
     <script type="module">
@@ -90,7 +90,7 @@
                         </form>
 
 
-                        <form id="createRockForm">
+                        <form id="userInputSec">
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Mineral:</span>
                                 <input type="text" id="rockMineral" class="form-control" aria-describedby="inputGroup-sizing-default">
@@ -118,13 +118,13 @@
                                        aria-label="Sizing example input"
                                        aria-describedby="inputGroup-sizing-default">
                             </div>
-                            <button id="createObjectBtn" type="submit" class="btn btn-primary" style="width:100%;">Create Object</button>
+                            <button id="submit" type="submit" class="btn btn-primary" style="width:100%;">Create Object</button>
                             <script type="module">
                                 import {onCreateRock} from '/index.js'
 
                                 document.querySelector('#createContainerForm').addEventListener('submit', onCreateRock)
                             </script>
-                            <p id="errorTextObject" style="color: red; opacity: 0;">cool text</p>
+                            <p id="errorText" style="color: red; opacity: 0;">cool text</p>
                         </form>
                         <h5>Search</h5>
                         <!-- search box-->
