@@ -38,9 +38,7 @@ body {
 
 .cell span {
     display: inline-block;
-    margin: 1em;
     font-size: 1.2em;
-    font-weight: 900;
 }
 
 .resize-handle-x {
