@@ -38,6 +38,11 @@
             .then((data) => {
                 document.getElementById('app').textContent = data.message;
             });
+        fetch('/create-Rock')
+            .then((res) => res.json())
+            .then((data) => {
+                document.getElementById('app').textContent = data.message;
+            });
         fetch('/api')
             .then((res) => res.json())
             .then((data) => {
@@ -93,36 +98,42 @@
                         <form id="createRockForm">
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Mineral:</span>
-                                <input type="text" id="rockMineral" class="form-control" aria-describedby="inputGroup-sizing-default">
+                                <input type="text" id="rockMineral" class="form-control" aria-describedby="inputGroup-sizing-default" required>
                             </div>
                             <div class="input-group mb-3 input-group-sm ">
-                                <span class="input-group-text" >Ht</span>
+                                <span class="input-group-text" >Total wt:</span>
                                 <input type="number" min="0" step="1"
                                        id="rockTotalWeight"
                                        class="form-control"
                                        placeholder="In"
-                                       aria-describedby="inputGroup-sizing-default">
+                                       aria-describedby="inputGroup-sizing-default" required>
 
-                                <span class="input-group-text">Lt</span>
+                                <span class="input-group-text">Amount:</span>
                                 <input type="number" min="0" step="1"
                                        id="rockAmount"
                                        class="form-control"
                                        placeholder="In"
-                                       aria-describedby="inputGroup-sizing-default">
-
-                                <span class="input-group-text">Wt</span>
-                                <input type="number"
-                                       id="rockProcessed"
-                                       class="form-control"
-                                       placeholder="In"
-                                       aria-label="Sizing example input"
-                                       aria-describedby="inputGroup-sizing-default">
+                                       aria-describedby="inputGroup-sizing-default" required>
                             </div>
-                            <button id="createObjectBtn" type="submit" class="btn btn-primary" style="width:100%;">Create Object</button>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Processed:</span>
+                                <select id="processess" name="processess">
+                                    <option value="0">Rough</option>
+                                    <option value="1">Tumbled</option>
+                                    <option value="2">Polished</option>
+                                    <option value="3">Faceted</option>
+                                </select>
+                                <input type="submit" id="rockProcessed" class="form-control" aria-describedby="inputGroup-sizing-default" required>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">URL:</span>
+                                <input type="text" id="rockUrl" class="form-control" aria-describedby="inputGroup-sizing-default" required>
+                            </div>
+                            <button id="createObjectBtn" type="submit" class="btn btn-primary" style="width:100%;">Create Rock</button>
                             <script type="module">
                                 import {onCreateRock} from '/index.js'
 
-                                document.querySelector('#createContainerForm').addEventListener('submit', onCreateRock)
+                                document.querySelector('#createRockForm').addEventListener('submit', onCreateRock)
                             </script>
                             <p id="errorTextObject" style="color: red; opacity: 0;">cool text</p>
                         </form>
