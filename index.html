@@ -28,7 +28,7 @@
     <!--    Google jQuery-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-    <script src="/public/js/userEditItems.js" defer></script>
+    <script src="/js/userEditItems.js" defer></script>
     <script type="module" src="/index.js" defer></script>
 
     <script type="module">
@@ -90,7 +90,7 @@
                         </form>
 
 
-                        <form id="userInputSec" action="/create-Object" method="POST">
+                        <form id="userInputSec">
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Name</span>
                                 <input type="text" id="name" class="form-control" aria-describedby="inputGroup-sizing-default">
@@ -105,8 +105,8 @@
                                 <span class="input-group-text">Wt</span>
                                 <input type="number" id="width" class="form-control" placeholder="In" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                             </div>
-                            <button id="createObjectBtn" type="submit" class="btn btn-primary" style="width:100%;">Create Object</button>
-                            <p id="errorTextObject" style="color: red; opacity: 0;">cool text</p>
+                            <button type="submit" class="btn btn-primary" style="width:100%;">CreatObj</button>
+                            <p id="errorText" style="color: red; opacity: 0;">cool text</p>
                         </form>
                         <h5>Search</h5>
                         <!-- search box-->
