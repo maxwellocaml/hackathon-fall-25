@@ -7,7 +7,7 @@ import { ViewportGizmo } from "three-viewport-gizmo";
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { loadThreeModel } from "/public/js/models.js";
 import {RGBELoader} from "three/addons/loaders/RGBELoader";
-import {Mesh, DoubleSide, MeshPhysicalMaterial, BoxGeometry, ReinhardToneMapping} from "three";
+import {Mesh, DoubleSide,  GridHelper, MeshPhysicalMaterial, BoxGeometry, ReinhardToneMapping, Cache as controls} from "three";
 import {OutlinePass} from "three/addons/postprocessing/OutlinePass.js";
 import {FXAAShader} from "three/addons/shaders/FXAAShader.js";
 import {EffectComposer, RenderPass, ShaderPass} from "three/addons";
@@ -16,28 +16,46 @@ import {EffectComposer, RenderPass, ShaderPass} from "three/addons";
 const resizableGrid = initGrid();
 const canvasContainer = document.querySelector("#canvas-container");
 
-//initialize scene variables
-//scene
-const scene = new THREE.Scene();
-//scene.background = new THREE.Color(0xADD8E6); // Light blue color
-
-//camera
+//CAMERA
 const camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
-    0.1,
-    1000
+    0.1, //near
+    1000 //far
 );
-//renderer
+
+
+//RENDERER
 const renderer = new THREE.WebGLRenderer({antialias: true});
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(
     canvasContainer.clientWidth,
     canvasContainer.clientHeight
 );
-renderer.setPixelRatio(window.devicePixelRatio);
+//renderer.shadowMap.enabled = true;
 //renderer.toneMapping = ReinhardToneMapping;
 renderer.setAnimationLoop(animate);
 canvasContainer.appendChild( renderer.domElement );
+
+//WINDOW RESIZE HANDLING
+window.addEventListener('resize', resize)
+function resize() {
+    const [width, height] = [
+        canvasContainer.clientWidth,
+        canvasContainer.clientHeight,
+    ];
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+    gizmo.update();
+}
+
+
+//SCENE
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xADD8E6); // Light blue color
+
+
 
 //https://cloud.needle.tools/hdris?img=Photo+Studio+Loft+Hall
 // Initialize KTX2 loader. The transcoder path can come from three.js or Needle.
@@ -54,11 +72,8 @@ ktx2Loader.load('https://cdn.needle.tools/static/hdris/photo_studio_loft_hall_2k
     scene.backgroundBlurriness = 0.08;
 });
 
-//threemodel is imported from seperate js file which can import many objects at once
-const [threeModel, threeModelAnimation] = loadThreeModel(scene, renderer);
-scene.add(threeModel);
 
-
+//CONTROLS
 // Init Gizmo with OrbitControls
 const gizmo = new ViewportGizmo(camera, renderer, {
     container: canvasContainer,
@@ -70,125 +85,95 @@ camera.position.set(5, 5, 5);
 gizmo.target.set(0, 0, 0);
 camera.lookAt(gizmo.target);
 
-let INTERSECTED;
-
-const mouse = new THREE.Vector2();
-const raycaster = new THREE.Raycaster();
-
-const composer = new EffectComposer(renderer);
-const renderPass = new RenderPass(scene, camera);
-
-composer.addPass(renderPass);
-
-const outline = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
-outline.edgeThickness = 5.0;
-outline.edgeStrength = 5.0;
-outline.visibleEdgeColor.set(0xffffff);
-
-composer.addPass(outline);
-
-const textureLoader = new THREE.TextureLoader();
-textureLoader.load("/assets/tri_pattern.jpg", function(texture){
-    if (texture) {
-        outline.patternTexture = texture;
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-    }
+const materialContainer = new MeshPhysicalMaterial({
+    color: 0x1e2742,
+    transparent: true,
+    opacity: 1,
+    side: DoubleSide,
+    metalness: 0,
+    roughness: 0.5,
+    //clearcoat: 0.5, leave clear coat for objs
+    //clearcoatRoughness: 0.1,
+    ior: 1.5,
+    sheen: 0.2,
+    sheenRoughness: 0.8,
 });
 
-// const fxaaShader = new ShaderPass(FXAAShader);
-// fxaaShader.uniforms["resolution"].value.set(1 / window.innerWidth, 1 / window.innerHeight);
-// composer.addPass(fxaaShader);
 
-const selectedObjects = [];
+//const [threeModel, threeModelAnimation] = loadThreeModel(scene, renderer);
+//scene.add(threeModel);
 
-function addSelectedObjects(object){
-    if (selectedObjects.length > 0) {
-        selectedObjects.pop();
-    }
-    selectedObjects.push(object);
+// GRIDHELPER
+function createFloor() {
+    const floor = new GridHelper(100, 50, 0x111111, 0x111111);
+    scene.add(floor);
+    floor.userData.ground = true;
 }
 
-function intersection(){
-    raycaster.setFromCamera(mouse,camera);
-    const intersects = raycaster.intersectObjects(scene.children, false);
+function createContainer() {
+    let scale = {x:1, y:1, z:15};
+    let pos = {x:0, y:0, z:0}
 
-    if ( intersects.length > 0 ) {
-        if ( INTERSECTED !== intersects[0].object && intersects[0].object.type === "Mesh" ) {
-            INTERSECTED = intersects[0].object;
-            addSelectedObjects(INTERSECTED);
+    let rect = new THREE.Mesh(new THREE.BoxGeometry(), materialContainer);
+    rect.position.set(pos.x, pos.y, pos.z);
+    rect.scale.set(scale.x, scale.y, scale.z);
+    //rect.castShadow = true;
+    //rect.receiveShadow = true;
+    scene.add(rect);
 
-            console.log(selectedObjects);
-            outline.selectedObjects = selectedObjects;
-
-            //console.log(INTERSECTED);
-            console.log(INTERSECTED);
-        }
-    } else {
-        INTERSECTED = null;
-    }
+    rect.userData.draggable = true;
+    rect.userData.name = "CONTAINER"
 }
 
+const raycaster = new THREE.Raycaster();
+const clickMouse = new THREE.Vector2();
+const moveMouse = new THREE.Vector2();
+let draggable; //THREE.Object3D
 
-function mouseMove(){
+canvasContainer.addEventListener('click', event => {
     event.preventDefault();
-    mouse.x = (event.clientX /  window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    intersection();
-    composer.render();
-}
+    //because the canvas doesn't take up the full screen, we need to offset it when normalizing mouse screen coords
+    const offsetWidth = (window.innerWidth - canvasContainer.clientWidth);
+    const offsetHeight = (window.innerHeight - canvasContainer.clientHeight);
+    clickMouse.x = ( (event.clientX - offsetWidth) / canvasContainer.clientWidth) * 2 -1;
+    clickMouse.y = - ( (event.clientY - offsetHeight) / canvasContainer.clientHeight) * 2 +1;
+    console.log("x : " + clickMouse.x + " y : " + clickMouse.y);
 
-//window.addEventListener("resize", resize);
-renderer.domElement.style.touchAction = "none";
-renderer.domElement.addEventListener("mousemove", mouseMove);
 
-function render(){
-    const intersects = raycaster.intersectObjects( scene.children );
-    try {
-        intersects[0].object.material.color.set( Math.random() * 0xff0000 );
-    } catch (e) {
-        console.error(e);
+    raycaster.setFromCamera(clickMouse, camera);
+    const found = raycaster.intersectObjects(scene.children, true);
+    //Gridhelper messes up most raycastings, so filter returned array to only include mesh objects
+    const foundFiltered = found.filter(function (el) {
+        return el.object.isMesh === true;
+    });
+    console.log(foundFiltered)
+
+    if (foundFiltered.length > 0 && foundFiltered[0].object.userData.draggable) {
+        draggable = foundFiltered[0].object;
+        console.log(`found draggable ${draggable.userData.name}`)
     }
-    // for (let i = 0; i < intersects.length; i++) {
-    //     //console.log(intersects[i].object.name)
-    //     intersects[i].object.material.color.set( Math.random() * 0xff0000 );
-    // }
-    //renderer.render(scene, camera);
-    composer.render();
-    requestAnimationFrame(render);
-}
+})
+
+createFloor();
+createContainer();
+const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 5);
+scene.add(hemiLight);
 
 
 
-
-
-//animation/render loop
+// ANIMATION LOOP
 function animate(time) {
     renderer.autoClear = false;
     renderer.clear();
     renderer.setPixelRatio(window.devicePixelRatio);
     //renderer.toneMapping = THREE.REINHARD_TONE_MAPPING;
-    render();
+    renderer.render(scene, camera);
+
+    requestAnimationFrame(animate);
 
     // Render the Gizmo
     gizmo.render();
-}
-
-
-//refresh the size of the content when window size is affected
-window.onresize = resize;
-function resize() {
-    const [width, height] = [
-        canvasContainer.clientWidth,
-        canvasContainer.clientHeight,
-    ];
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-    composer.setSize(width, height);
-    //fxaaShader.uniforms["resolution"].value.set(1 / width, 1 / height);
-    gizmo.update();
 }
 
 function initGrid() {

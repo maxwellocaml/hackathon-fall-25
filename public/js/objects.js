@@ -1,4 +1,3 @@
-//https://github.com/Fennec-hub/three-viewport-gizmo/blob/main/docs/public/samples/common/threeModel.js
 import {
     Group,
     Mesh,
@@ -18,7 +17,8 @@ import {
 } from "three";
 const ROOT = "../../three-viewport-gizmo/assets/";
 
-export const loadThreeModel = (scene, renderer) => {
+
+export const loadObjects = (scene, renderer) => {
     const threeModel = new Group();
     scene.add(threeModel);
 
@@ -30,8 +30,6 @@ export const loadThreeModel = (scene, renderer) => {
         transparent: true,
         opacity: 0.6,
         side: DoubleSide,
-        //depthTest: true,
-        //depthWrite: true,
         metalness: 0,
         roughness: 0.5,
         //clearcoat: 0.5, leave clear coat for objs
@@ -39,29 +37,10 @@ export const loadThreeModel = (scene, renderer) => {
         ior: 1.5,
         sheen: 0.2,
         sheenRoughness: 0.8,
-        //specularIntensity: 1,
     });
 
-    // Material
-    const material = new MeshPhysicalMaterial({
-        color: 0,
-        transparent: true,
-        side: DoubleSide,
-        metalness: 1,
-        roughness: 0.2,
-        clearcoat: 1,
-        clearcoatRoughness: 0.2,
-        envMapIntensity: 1,
-        transmission: 0,
-        opacity: 0.5,
-        reflectivity: 1,
-        ior: 2.33,
-        iridescence: 0.2,
-        iridescenceIOR: 0.5,
-        sheen: 2,
-        sheenRoughness: 0.5,
-        specularIntensity: 1,
-    });
+
+
     // GridHelper
     threeModel.add(new GridHelper(100, 50, 0x111111, 0x111111));
 
@@ -77,7 +56,7 @@ export const loadThreeModel = (scene, renderer) => {
     threeModel.add(ambientLight);
     const directionalLight = new DirectionalLight(0xffffff, 0.35);
     directionalLight.position.set(150, 200, 50);
-// Shadows
+    // Shadows
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 1024;
     directionalLight.shadow.mapSize.height = 1024;
@@ -106,7 +85,7 @@ export const loadThreeModel = (scene, renderer) => {
     const sphere = new Mesh(new SphereGeometry(0.5, 100, 100), materialTest);
     sphere.position.set(4, 2.5, 0);
 
-    const octahedron = new Mesh(new OctahedronGeometry(0.5), materialTest);
+    const octahedron = new Mesh(new OctahedronGeometry(0.5, 2), materialTest);
     octahedron.position.set(1, 6, 0);
     octahedron.rotation.z = Math.PI / 4;
 
@@ -123,19 +102,5 @@ export const loadThreeModel = (scene, renderer) => {
 
     threeModel.add(sphere, octahedron, cone, cone2, cube);
 
-    const clock = new Clock();
-    function threeModelAnimation() {
-        const time = clock.getElapsedTime();
-
-        // Rotation
-        ///lightGroup.rotation.y += 0.01;
-        //octahedron.rotation.y += 0.01;
-        //cone.rotation.y += 0.01;
-
-        // Float
-        //sphere.position.y = 2.5 + Math.cos(time + 2) * 0.25;
-        //octahedron.position.y = 6 + Math.cos(time + 1) * 0.2;
-        //cone.position.y = 2 + Math.cos(time) * 0.3;
-    }
-    return [threeModel, threeModelAnimation];
+    return threeModel;
 };
