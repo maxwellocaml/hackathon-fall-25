@@ -117,3 +117,24 @@ app.post('/create-Container', function (req, res) {
     })
 
 });
+
+app.post('/create-Rock', function (req, res) {
+    const containerInfo = {
+        name: req.body.name,
+        capacity: (req.body.length * req.body.width * req.body.height),
+        fulfilled: 0, //empty upon creation
+        contents: [] //empty array upon creation
+    }
+    console.log(containerInfo)
+
+    //create container
+    const newContainer = new Container(containerInfo);
+    newContainer.save().then(container => {
+        console.log(container._id);
+        res.send({"message": "success"});
+    }).catch(err => {
+        console.log(err);
+        res.send({"message": err.message});
+    })
+
+});

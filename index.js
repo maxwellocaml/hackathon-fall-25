@@ -277,21 +277,12 @@ scene.add(hemiLight);
 
 
 
-// ANIMATION LOOP
+
+
 function animate(time) {
-    renderer.autoClear = false;
-    renderer.clear();
-    renderer.setPixelRatio(window.devicePixelRatio);
-    //renderer.toneMapping = THREE.REINHARD_TONE_MAPPING;
     renderer.render(scene, camera);
     // Render the Gizmo
     gizmo.render();
-    requestAnimationFrame((t) => animate(t));
-    // try {
-    //     requestAnimationFrame(callback);
-    // } catch (e) {}
-
-
 }
 
 function initGrid() {
@@ -476,8 +467,8 @@ function getGizmoConfig() {
     return darkCubeConfig;
 }
 
-//not called directly because index4 is a module js when referred to by index.html
 export function onCreateContainer() {
+    event.preventDefault();
     console.log("creating container");
     const containerName = document.getElementById("containerName").value
     const containerHeight = document.getElementById("containerHeight").value
@@ -488,9 +479,7 @@ export function onCreateContainer() {
     console.log(containerWidth);
     console.log(containerLength);
 
-
     const container = createContainer(containerWidth, containerHeight, containerLength, 1, 1, 1);
-
     $.post('/create-Container', {
         //_id: container.uuid,
         name: containerName,
@@ -506,3 +495,35 @@ export function onCreateContainer() {
         })
 
 }
+
+
+
+export function onCreateRock() {
+    event.preventDefault();
+    console.log("creating rock");
+    const containerName = document.getElementById("containerName").value
+    const containerHeight = document.getElementById("containerHeight").value
+    const containerWidth = document.getElementById("containerWidth").value
+    const containerLength = document.getElementById("containerLength").value
+    console.log(containerName);
+    console.log(containerHeight);
+    console.log(containerWidth);
+    console.log(containerLength);
+
+    const container = createContainer(containerWidth, containerHeight, containerLength, 1, 1, 1);
+    $.post('/create-Container', {
+        //_id: container.uuid,
+        name: containerName,
+        height: containerHeight,
+        width: containerWidth,
+        length: containerLength
+    }).done(function (data) {
+        console.log(data.message);
+        if(data.message==='success') {
+            scene.add(container);
+            //renderer.render(scene, camera);
+        }
+    })
+
+}
+
