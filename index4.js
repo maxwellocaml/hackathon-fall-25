@@ -11,6 +11,7 @@ import {Mesh, DoubleSide,  GridHelper, MeshPhysicalMaterial, BoxGeometry, Reinha
 import {OutlinePass} from "three/addons/postprocessing/OutlinePass.js";
 import {FXAAShader} from "three/addons/shaders/FXAAShader.js";
 import {EffectComposer, RenderPass, ShaderPass} from "three/addons";
+import { TeapotGeometry } from 'three/addons/geometries/TeapotGeometry.js';
 
 // Initialize Gird
 const resizableGrid = initGrid();
@@ -88,12 +89,24 @@ camera.lookAt(gizmo.target);
 const materialContainer = new MeshPhysicalMaterial({
     color: 0x1e2742,
     transparent: true,
-    opacity: 1,
+    opacity: 0.6,
     side: DoubleSide,
     metalness: 0,
     roughness: 0.5,
-    //clearcoat: 0.5, leave clear coat for objs
-    //clearcoatRoughness: 0.1,
+    ior: 1.5,
+    sheen: 0.2,
+    sheenRoughness: 0.8,
+});
+
+const materialObject = new MeshPhysicalMaterial({
+    color: Math.random() * 0xffffff,
+    transparent: true,
+    opacity: 1,
+    //side: DoubleSide,
+    metalness: 0,
+    roughness: 0.5,
+    clearcoat: 0.5,
+    clearcoatRoughness: 0.1,
     ior: 1.5,
     sheen: 0.2,
     sheenRoughness: 0.8,
@@ -122,7 +135,77 @@ function createContainer() {
     scene.add(rect);
 
     rect.userData.draggable = true;
+    rect.userData.isContainer = true;
     rect.userData.name = "CONTAINER"
+}
+
+function createObject() {
+    let scale = {x:1, y:1, z:1};
+    let pos = {x:0, y:0, z:0}
+
+    const choice = Math.random() * 13;
+    console.log(choice);
+    let geometry;
+    let geometryType;
+    switch(choice) {
+        case 0: //CUBE
+            geometry = new THREE.BoxGeometry( 1, 1, 1 );
+            geometryType = ""
+            break;
+        case 1: //TRIANGULAR CONE
+            geometry = new THREE.ConeGeometry(1, 1, 3);
+            break;
+        case 2: //QUAD CONE
+            geometry = new THREE.ConeGeometry(1, 1, 4);
+            break;
+        case 3: //8 CONE
+            geometry = new THREE.ConeGeometry(1, 1, 8);
+            break;
+        case 4: // PENTAGON CYLINDER
+            geometry = new THREE.CylinderGeometry(
+                1, 1, 1, 5 );
+            break;
+        case 5: //12side CYLINDER
+            geometry = new THREE.CylinderGeometry(
+                1, 1, 1, 12 );
+            break;
+        case 6: //DODECAHEDRON
+            geometry = new THREE.DodecahedronGeometry( 1 );
+            break;
+        case 7: //ICOSAHEDRON
+            geometry = new THREE.IcosahedronGeometry( 1 );
+            break;
+        case 8: //OCTAHEDRON
+            geometry = new THREE.OctahedronGeometry( 1 );
+            break;
+        case 9: //SPHERE
+            geometry = new THREE.SphereGeometry( 1, 12, 8 );
+            break;
+        case 10: //TORUS
+            geometry = new THREE.TorusGeometry(
+                1, 1,
+                6, 12 );
+            break;
+        case 11: //KNOTTED TORUS
+            geometry = new THREE.TorusKnotGeometry(
+                1, 1, 8, 40, 2, 3 );
+            break;
+        case 12: //UTAH TEAPOT
+            geometry = new TeapotGeometry( 1, 10 )
+            break;
+        default:
+            geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    }
+    let obj = new THREE.Mesh(geometry, materialObject);
+    obj.position.set(pos.x, pos.y, pos.z);
+    obj.scale.set(scale.x, scale.y, scale.z);
+    //obj.castShadow = true;
+    //obj.receiveShadow = true;
+    scene.add(obj);
+
+    obj.userData.draggable = true;
+    obj.userData.isObject = true;
+    obj.userData.name = "OBJECT"
 }
 
 const raycaster = new THREE.Raycaster();
@@ -132,6 +215,12 @@ let draggable; //THREE.Object3D
 
 canvasContainer.addEventListener('click', event => {
     event.preventDefault();
+
+    if (draggable) {
+        console.log("dropping draggable " +draggable.userData.name);
+        draggable = null;
+        return;
+    }
 
     //because the canvas doesn't take up the full screen, we need to offset it when normalizing mouse screen coords
     const offsetWidth = (window.innerWidth - canvasContainer.clientWidth);
@@ -155,6 +244,31 @@ canvasContainer.addEventListener('click', event => {
     }
 })
 
+canvasContainer.addEventListener('mousemove', event => {
+    //because the canvas doesn't take up the full screen, we need to offset it when normalizing mouse screen coords
+    const offsetWidth = (window.innerWidth - canvasContainer.clientWidth);
+    const offsetHeight = (window.innerHeight - canvasContainer.clientHeight);
+    moveMouse.x = ( (event.clientX - offsetWidth) / canvasContainer.clientWidth) * 2 -1;
+    moveMouse.y = - ( (event.clientY - offsetHeight) / canvasContainer.clientHeight) * 2 +1;
+    //console.log("x : " + moveMouse.x + " y : " + moveMouse.y);
+})
+
+function dragObject () {
+    if (draggable !== null) {
+        console.log("draggable");
+        raycaster.setFromCamera(moveMouse, camera);
+        const found = raycaster.intersectObjects(scene.children, true);
+        if (found.length > 0) {
+            for(let o of found) {
+                if(!o.object.userData.ground)
+                    continue
+                draggable.position.x = o.point.x;
+                draggable.position.z = o.point.z;
+            }
+        }
+    }
+}
+
 createFloor();
 createContainer();
 const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 5);
@@ -164,14 +278,13 @@ scene.add(hemiLight);
 
 // ANIMATION LOOP
 function animate(time) {
+    //dragObject(); //hangs the animations, but functionality isn't necessary for the demo
     renderer.autoClear = false;
     renderer.clear();
     renderer.setPixelRatio(window.devicePixelRatio);
     //renderer.toneMapping = THREE.REINHARD_TONE_MAPPING;
     renderer.render(scene, camera);
-
     requestAnimationFrame(animate);
-
     // Render the Gizmo
     gizmo.render();
 }
