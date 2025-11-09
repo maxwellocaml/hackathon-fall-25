@@ -10,18 +10,72 @@ app.use(express.static(__dirname + "/public"));
 
 mongoose.connect('mongodb://localhost:27017/ObjDB', {})
     .then(function (db) {
-        console.log("db connected");
+        console.log("ObjDB Connected");
     });
 
-
-app.listen(3000, function () {
-    console.log("server started at 3000");
+const PORT = 3000;
+app.listen(PORT, function () {
+    console.log("Server running at http://localhost:" + PORT);
 });
 
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + "/index.html");
 });
+
+// Serve a basic API response
+app.get('/api', (req, res) => {
+    res.json({ message: 'Hello from Vite and Node.js!' });
+});
+
+//mongoose schemas and models
+const rockSchema={
+    mineral:{
+        type:String,
+        required:true,
+    },
+    totalWeight:{
+        type:Number,
+        min:0,
+        max:100000,
+        required:true,
+    },
+    amount:{
+        type:Number,
+        min:0,
+        max:100,
+        required:true,
+    },
+    processed:{
+        type:String,
+    },
+    url:{
+        type:String,
+    }
+}
+const containerSchema = {
+    name:{
+        type:String,
+        required:true,
+    },
+    capacity:{
+        type:Number,
+        min:1,
+        max:1000,
+        required:true,
+    },
+    fulfilled:{
+        type:Number,
+        min:0,
+        max:1000,
+        required:true,
+    },
+    contents: [{
+        type:String,
+    }]
+}
+const Rock=mongoose.model('Rock',rockSchema, 'rocks');
+const Container=mongoose.model('Container', containerSchema, 'containers');
 
 app.post('/addNewObj', express.json(), async (req, res) => {
     const client = await MongoClient.connect("mongodb://localhost:27017/");
@@ -43,35 +97,23 @@ app.delete('/deleteObj/:id', express.json(), async (req, res) => {
 });
 
 
-app.post('/save-headline', function (req, res) {
-    const updated_headline = {
-        title: req.body.title,
-        author: req.body.author,
-        content: req.body.content,
+app.post('/create-Container', function (req, res) {
+    const containerInfo = {
+        name: req.body.name,
+        capacity: (req.body.length * req.body.width * req.body.height),
+        fulfilled: 0, //empty upon creation
+        contents: [] //empty array upon creation
     }
-    const news_id = req.body._id;
-    console.log(news_id)
-    if (!news_id){
-        //no id, create entry
-        const newHeadline = new News(updated_headline);
-        newHeadline.save().then(new_headline => {
-            console.log(new_headline._id);
-            res.redirect('/get-headline-detail?news_id=' + newHeadline._id);
-        }).catch(err => {
-            console.log(err);
-            res.redirect("/save-headline?error_message="+err['message']+"&input="+JSON.stringify(newHeadline));
-        })
-    }else{
-        //id, update entry
-        News.updateOne(
-            {_id: news_id},
-            {$set: updated_headline},
-            {runValidators: true}
-        ).then(new_headline => {
-            res.redirect('/get-headline-detail?news_id=' + news_id);
-        }).catch(err => {
-            console.log(err);
-            res.redirect("/save-headline?error_message="+err['message']+"&input="+JSON.stringify(updated_headline)+"&news_id="+news_id);
-        })
-    }
+    console.log(containerInfo)
+
+    //create container
+    const newContainer = new Container(containerInfo);
+    newContainer.save().then(container => {
+        console.log(container._id);
+        res.send({"message": "success"});
+    }).catch(err => {
+        console.log(err);
+        res.send({"message": err.message});
+    })
+
 });

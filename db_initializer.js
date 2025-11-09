@@ -53,13 +53,13 @@ const containerSchema = {
     capacity:{
         type:Number,
         min:1,
-        max:100,
+        max:1000,
         required:true,
     },
     fulfilled:{
         type:Number,
         min:0,
-        max:100,
+        max:1000,
         required:true,
     },
     contents: [{
