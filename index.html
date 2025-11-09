@@ -10,11 +10,96 @@
         href="/assets/slappy.jpg"
     />
     <link rel="stylesheet" href="/css/index.css">
+
+
+
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <!--    Bootstrap-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
+          crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+            crossorigin="anonymous"></script>
+
+    <!--    Google jQuery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="/public/js/userEditItems.js" defer></script>
+
+
 </head>
 <body>
     <div id="grid" >
         <div class="column" id="col1">
-            <div class="cell"><span>Column 1</span></div>
+            <div class="cell"><span>Column 1</span>
+                    <div id="selection_section">
+                        <form id="userInputSec">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Name</span>
+                                <input type="text" id="name" class="form-control" aria-describedby="inputGroup-sizing-default">
+                            </div>
+                            <div class="input-group mb-3 input-group-sm ">
+                                <span class="input-group-text" >Ht</span>
+                                <input type="number" id="height" class="form-control" placeholder="In"  aria-describedby="inputGroup-sizing-default">
+
+                                <span class="input-group-text">Lt</span>
+                                <input type="number" id="length" class="form-control" placeholder="In" aria-describedby="inputGroup-sizing-default">
+
+                                <span class="input-group-text">Wt</span>
+                                <input type="number" id="width" class="form-control" placeholder="In" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width:100%;">CreatObj</button>
+                            <p id="errorText" style="color: red; opacity: 0;">cool text</p>
+                        </form>
+                        <h5>Search</h5>
+                        <!-- search box-->
+                        <div class="input-group mb-3">
+                            <input id="search_box" type="search" class="form-control" placeholder="Search cars..." aria-label="Search"
+                                   aria-describedby="basic-addon2" onsearch="update_cars()">
+                            <span class="input-group-text" id="basic-addon2"><i class="fas fa-search"></i></span>
+                        </div>
+
+                        <!-- like and dislike radio buttons-->
+                        <div>
+                            <h5>Filter</h5>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="like_dislikes" id="all_cars" value="all"
+                                       onclick="update_cars(true,false,false)"
+                                       checked>
+                                <label class="form-check-label" for="all_cars">
+                                    All cars
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="like_dislikes" id="all_likes" value="like"
+                                       onclick="update_cars(false,true,false)">
+                                <label class="form-check-label" for="all_likes">
+                                    Likes
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="like_dislikes" id="all_dislikes" value="dislike"
+                                       onclick="update_cars(false,false,true)">
+                                <label class="form-check-label" for="all_dislikes">
+                                    Dislikes
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- brand list-->
+                        <div>
+                            <h5>All brands</h5>
+                            <div id = 'container' style=" height: 2000px; overflow: auto">
+                                <ul id="item_section">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+            </div>
             <div class="resize-handle-x"></div>
         </div>
 
