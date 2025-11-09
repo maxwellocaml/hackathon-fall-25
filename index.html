@@ -35,8 +35,30 @@
 <body>
     <div id="grid" >
         <div class="column" id="col1">
-            <div class="cell"><span>Column 1</span>
+            <div class="cell"><span></span>
                     <div id="selection_section">
+
+
+                        <form id="createContainerForm" action="/createContainer" method="POST">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Name</span>
+                                <input type="text" id="nameContainer" class="form-control" aria-describedby="inputGroup-sizing-default">
+                            </div>
+                            <div class="input-group mb-3 input-group-sm ">
+                                <span class="input-group-text" >Ht</span>
+                                <input type="number" id="heightContainer" class="form-control" placeholder="In"  aria-describedby="inputGroup-sizing-default">
+
+                                <span class="input-group-text">Lt</span>
+                                <input type="number" id="lengthContainer" class="form-control" placeholder="In" aria-describedby="inputGroup-sizing-default">
+
+                                <span class="input-group-text">Wt</span>
+                                <input type="number" id="widthContainer" class="form-control" placeholder="In" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width:100%;">CreatObj</button>
+                            <p id="errorText" style="color: red; opacity: 0;">cool text</p>
+                        </form>
+
+
                         <form id="userInputSec">
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Name</span>
@@ -105,7 +127,7 @@
 
         <div class="column middle-column" id="col2" >
             <div class="cell">
-                <span>Row 1</span>
+                <span></span>
                 <div class="resize-handle-y"></div>
             </div>
             <div class="cell" id="canvas-container">

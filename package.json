@@ -20,7 +20,9 @@
   },
   "dependencies": {
     "body-parser": "^2.2.0",
+    "csv-parse": "^6.1.0",
     "express": "^5.1.0",
+    "mongodb": "^7.0.0",
     "mongoose": "^8.19.3",
     "three": "^0.181.0",
     "three-viewport-gizmo": "^2.2.0"
