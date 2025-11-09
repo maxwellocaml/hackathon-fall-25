@@ -8,9 +8,6 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { loadThreeModel } from "/public/js/models.js";
 import {RGBELoader} from "three/addons/loaders/RGBELoader";
 import {Mesh, DoubleSide,  GridHelper, MeshPhysicalMaterial, BoxGeometry, ReinhardToneMapping, Cache as controls} from "three";
-import {OutlinePass} from "three/addons/postprocessing/OutlinePass.js";
-import {FXAAShader} from "three/addons/shaders/FXAAShader.js";
-import {EffectComposer, RenderPass, ShaderPass} from "three/addons";
 import { TeapotGeometry } from 'three/addons/geometries/TeapotGeometry.js';
 
 // Initialize Gird
@@ -54,7 +51,7 @@ function resize() {
 
 //SCENE
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xADD8E6); // Light blue color
+scene.background = new THREE.Color(0x000000); // Light blue color
 
 
 
@@ -98,24 +95,6 @@ const materialContainer = new MeshPhysicalMaterial({
     sheenRoughness: 0.8,
 });
 
-const materialObject = new MeshPhysicalMaterial({
-    color: Math.random() * 0xffffff,
-    transparent: true,
-    opacity: 1,
-    //side: DoubleSide,
-    metalness: 0,
-    roughness: 0.5,
-    clearcoat: 0.5,
-    clearcoatRoughness: 0.1,
-    ior: 1.5,
-    sheen: 0.2,
-    sheenRoughness: 0.8,
-});
-
-
-//const [threeModel, threeModelAnimation] = loadThreeModel(scene, renderer);
-//scene.add(threeModel);
-
 // GRIDHELPER
 function createFloor() {
     const floor = new GridHelper(100, 50, 0x111111, 0x111111);
@@ -123,89 +102,108 @@ function createFloor() {
     floor.userData.ground = true;
 }
 
-function createContainer() {
-    let scale = {x:1, y:1, z:15};
+function createContainer(x, y, z) {
     let pos = {x:0, y:0, z:0}
 
     let rect = new THREE.Mesh(new THREE.BoxGeometry(), materialContainer);
     rect.position.set(pos.x, pos.y, pos.z);
-    rect.scale.set(scale.x, scale.y, scale.z);
+    rect.scale.set(x, y, z);
     //rect.castShadow = true;
     //rect.receiveShadow = true;
     scene.add(rect);
 
     rect.userData.draggable = true;
     rect.userData.isContainer = true;
+    rect.userData.capacity = x * y * z;
     rect.userData.name = "CONTAINER"
 }
 
-function createObject() {
-    let scale = {x:1, y:1, z:1};
-    let pos = {x:0, y:0, z:0}
+function createObject(x, y, z) {
+    //let scale = {x:1, y:1, z:1};
+    //let pos = {x:0, y:1, z:0}
 
-    const choice = Math.random() * 13;
+    const choice = Math.floor(Math.random() * 13);
     console.log(choice);
     let geometry;
     let geometryType;
     switch(choice) {
         case 0: //CUBE
             geometry = new THREE.BoxGeometry( 1, 1, 1 );
-            geometryType = ""
+            geometryType = "cube"
             break;
         case 1: //TRIANGULAR CONE
-            geometry = new THREE.ConeGeometry(1, 1, 3);
+            geometry = new THREE.ConeGeometry(0.75, 1, 3);
+            geometryType = "triCone"
             break;
         case 2: //QUAD CONE
-            geometry = new THREE.ConeGeometry(1, 1, 4);
+            geometry = new THREE.ConeGeometry(0.75, 1, 4);
+            geometryType = "quadCone"
             break;
         case 3: //8 CONE
-            geometry = new THREE.ConeGeometry(1, 1, 8);
+            geometry = new THREE.ConeGeometry(0.5, 1, 8);
+            geometryType = "eightCone"
             break;
         case 4: // PENTAGON CYLINDER
-            geometry = new THREE.CylinderGeometry(
-                1, 1, 1, 5 );
+            geometry = new THREE.CylinderGeometry( 0.25, 0.75, 1, 5 );
+            geometryType = "pentCylinder"
             break;
         case 5: //12side CYLINDER
-            geometry = new THREE.CylinderGeometry(
-                1, 1, 1, 12 );
+            geometry = new THREE.CylinderGeometry( 0.25, 0.75, 1, 12 );
+            geometryType = "twelveCylinder"
             break;
         case 6: //DODECAHEDRON
-            geometry = new THREE.DodecahedronGeometry( 1 );
+            geometry = new THREE.DodecahedronGeometry( 0.75 );
+            geometryType = "dodecahedron"
             break;
         case 7: //ICOSAHEDRON
-            geometry = new THREE.IcosahedronGeometry( 1 );
+            geometry = new THREE.IcosahedronGeometry( 0.75 );
+            geometryType = "icosahedron"
             break;
         case 8: //OCTAHEDRON
-            geometry = new THREE.OctahedronGeometry( 1 );
+            geometry = new THREE.OctahedronGeometry( 0.75 );
+            geometryType = "octahedron"
             break;
         case 9: //SPHERE
-            geometry = new THREE.SphereGeometry( 1, 12, 8 );
+            geometry = new THREE.SphereGeometry( 0.75, 12, 8 );
+            geometryType = "sphere"
             break;
         case 10: //TORUS
-            geometry = new THREE.TorusGeometry(
-                1, 1,
-                6, 12 );
+            geometry = new THREE.TorusGeometry( 0.3, 0.3, 6, 12 );
+            geometryType = "torus"
             break;
         case 11: //KNOTTED TORUS
-            geometry = new THREE.TorusKnotGeometry(
-                1, 1, 8, 40, 2, 3 );
+            geometry = new THREE.TorusKnotGeometry( 0.25, 0.25, 8, 40, 2, 3 );
+            geometryType = "knottedTorus"
             break;
         case 12: //UTAH TEAPOT
-            geometry = new TeapotGeometry( 1, 10 )
+            geometry = new TeapotGeometry( 0.5, 10 )
+            geometryType = "teapot"
             break;
         default:
             geometry = new THREE.BoxGeometry( 1, 1, 1 );
+            geometryType = "cube"
     }
+
+    const materialObject = new MeshPhysicalMaterial({
+        color: Math.random() * 0xffffff,
+        opacity: 1,
+        metalness: 0,
+        roughness: 0.5,
+        clearcoat: 0.5,
+        clearcoatRoughness: 0.2,
+        ior: 1.2,
+        sheen: 0.2,
+        sheenRoughness: 0.8,
+    });
     let obj = new THREE.Mesh(geometry, materialObject);
-    obj.position.set(pos.x, pos.y, pos.z);
-    obj.scale.set(scale.x, scale.y, scale.z);
-    //obj.castShadow = true;
-    //obj.receiveShadow = true;
+    obj.position.set(x, y, z);
+
     scene.add(obj);
 
     obj.userData.draggable = true;
     obj.userData.isObject = true;
-    obj.userData.name = "OBJECT"
+    obj.userData.capacity = 1;
+    obj.userData.name = geometryType;
 }
 
 const raycaster = new THREE.Raycaster();
@@ -270,7 +268,10 @@ function dragObject () {
 }
 
 createFloor();
-createContainer();
+createContainer(2, 1, 3);
+for(let i = 0; i < 10; i++) {
+    createObject(i, 1, 0)
+}
 const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 5);
 scene.add(hemiLight);
 
@@ -278,15 +279,15 @@ scene.add(hemiLight);
 
 // ANIMATION LOOP
 function animate(time) {
-    //dragObject(); //hangs the animations, but functionality isn't necessary for the demo
     renderer.autoClear = false;
     renderer.clear();
     renderer.setPixelRatio(window.devicePixelRatio);
     //renderer.toneMapping = THREE.REINHARD_TONE_MAPPING;
     renderer.render(scene, camera);
-    requestAnimationFrame(animate);
     // Render the Gizmo
     gizmo.render();
+    requestAnimationFrame((t) => animate(t));
+    requestAnimationFrame(callback);
 }
 
 function initGrid() {
