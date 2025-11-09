@@ -12,6 +12,8 @@ export default defineConfig({
             '/getAllObjs': 'http://127.0.0.1:3000',
             '/deleteObj': 'http://127.0.0.1:3000',
             '/create-Rock': 'http://127.0.0.1:3000',
+            '/get-all-containers': 'http://127.0.0.1:3000',
+            '/get-all-rocks': 'http://127.0.0.1:3000',
         }
     },
 });

@@ -86,7 +86,7 @@ camera.lookAt(gizmo.target);
 const materialContainer = new MeshPhysicalMaterial({
     color: 0x1e2742,
     transparent: true,
-    opacity: 0.6,
+    opacity: 0.4,
     side: DoubleSide,
     metalness: 0,
     roughness: 0.5,
@@ -108,7 +108,7 @@ function createContainer(sx, sy, sz, px, py, pz) {
     rect.position.set(px, py, pz);
     //rect.castShadow = true;
     //rect.receiveShadow = true;
-    scene.add(rect);
+    //scene.add(rect);
 
     rect.userData.draggable = true;
     rect.userData.isContainer = true;
@@ -120,8 +120,12 @@ function createContainer(sx, sy, sz, px, py, pz) {
     return rect;
 }
 
-function createObject(px, py, pz) {
-    const choice = Math.floor(Math.random() * 13);
+function createObject(px, py, pz, choice) {
+    //randomize it if not given
+    if (choice > 13) {
+        choice = Math.floor(Math.random() * 13);
+    }
+
     console.log(choice);
     let geometry;
     let geometryType;
@@ -196,13 +200,16 @@ function createObject(px, py, pz) {
     });
     let obj = new THREE.Mesh(geometry, materialObject);
     obj.position.set(px, py, pz);
+    obj.castShadow = true;
+    obj.receiveShadow = true;
 
-    scene.add(obj);
+    //scene.add(obj);
 
     obj.userData.draggable = true;
     obj.userData.isObject = true;
     obj.userData.capacity = 1;
     obj.userData.name = geometryType;
+    obj.userData.choice = choice;
     return obj;
 }
 
@@ -241,7 +248,6 @@ canvasContainer.addEventListener('click', event => {
         console.log(`found draggable ${draggable.userData.name}`)
     }
 })
-
 canvasContainer.addEventListener('mousemove', event => {
     //because the canvas doesn't take up the full screen, we need to offset it when normalizing mouse screen coords
     const offsetWidth = (window.innerWidth - canvasContainer.clientWidth);
@@ -268,19 +274,64 @@ function dragObject () {
 }
 
 createFloor();
-createContainer(2, 1, 3);
-for(let i = 0; i < 10; i++) {
-    createObject(i, 1, 0)
-}
+// for(let i = 0; i < 10; i++) {
+//     createObject(i, 1, 0)
+// }
 const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 5);
 scene.add(hemiLight);
 
 
+function getContainer(container) {
+    const cont = createContainer(container.width, container.height, container.length, Math.random() * 20, Math.random() * 5, Math.random() * 20);
+    cont.userData.contents = container.contents;
+    cont.userData.fulfilled = container.fulfilled;
+    cont.userData.name = container.name;
+    return cont;
+}
 
+function showContainers(containers) {
+    containers.forEach((container, idx) => {
+        const cont = getContainer(container);
+        scene.add(cont)
+    });
+}
 
+$.getJSON('/get-all-containers').done(
+    data => {
+        if (data.message === "success") {
+            showContainers(data.data);
+        }
+    }
+)
+
+function getRock(rock) {
+    const rck = createObject(Math.random() * 20, Math.random() * 5, Math.random() * 20, rock.choice);
+    rck.userData.mineral = rock.mineral;
+    rck.userData.totalWeight = rock.totalWeight;
+    rck.userData.amount = rock.amount;
+    rck.userData.processed = rock.processed;
+    rck.userData.url = rock.url;
+    rck.userData.name = rock.name;
+    rck.userData.choice = rock.choice;
+    return rck;
+}
+
+function showRocks(rocks) {
+    rocks.forEach((rock, idx) => {
+        const rck = getRock(rock);
+        scene.add(rck)
+    });
+}
+
+$.getJSON('/get-all-rocks').done(
+    data => {
+        if (data.message === "success") {
+            showRocks(data.data);
+        }
+    }
+)
 
 function animate(time) {
-    //dragObject();
     renderer.render(scene, camera);
     // Render the Gizmo
     gizmo.render();
@@ -481,7 +532,7 @@ export function onCreateContainer() {
     console.log(containerLength);
 
     const container = createContainer(containerWidth, containerHeight, containerLength,
-        Math.random() * 20, Math.random() * 20, Math.random() * 20);
+        Math.random() * 20, Math.random() * 5, Math.random() * 20);
     $.post('/create-Container', {
         //_id: container.uuid,
         name: containerName,
@@ -498,7 +549,6 @@ export function onCreateContainer() {
 }
 
 
-
 export function onCreateRock() {
     event.preventDefault();
     console.log("creating rock");
@@ -508,14 +558,15 @@ export function onCreateRock() {
     const rockProcessed = document.getElementById("rockProcessed").value
     const rockUrl = document.getElementById("rockUrl").value
 
-
-    const rock = createObject(Math.random() * 20, Math.random() * 20, Math.random() * 20)
+    const choice = Math.floor(Math.random() * 13)
+    const rock = createObject(Math.random() * 20, Math.random() * 5, Math.random() * 20, choice)
     $.post('/create-Rock', {
         mineral: rockMineral,
         totalWeight: rockTotalWeight,
         amount: rockAmount,
         processed: rockProcessed,
-        url: rockUrl
+        url: rockUrl,
+        choice: choice
     }).done(function (data) {
         console.log(data.message);
         if(data.message==='success') {

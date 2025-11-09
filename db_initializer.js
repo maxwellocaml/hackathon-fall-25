@@ -43,6 +43,11 @@ const rockSchema={
     },
     url:{
         type:String,
+    },
+    choice:{
+        type:Number,
+        min:0,
+        max:13
     }
 }
 const containerSchema = {
@@ -50,7 +55,19 @@ const containerSchema = {
         type:String,
         required:true,
     },
-    capacity:{
+    length:{
+        type:Number,
+        min:1,
+        max:1000,
+        required:true,
+    },
+    width:{
+        type:Number,
+        min:1,
+        max:1000,
+        required:true,
+    },
+    height:{
         type:Number,
         min:1,
         max:1000,

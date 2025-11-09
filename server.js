@@ -51,6 +51,11 @@ const rockSchema={
     },
     url:{
         type:String,
+    },
+    choice:{
+        type:Number,
+        min:0,
+        max:13
     }
 }
 const containerSchema = {
@@ -58,7 +63,19 @@ const containerSchema = {
         type:String,
         required:true,
     },
-    capacity:{
+    length:{
+        type:Number,
+        min:1,
+        max:1000,
+        required:true,
+    },
+    width:{
+        type:Number,
+        min:1,
+        max:1000,
+        required:true,
+    },
+    height:{
         type:Number,
         min:1,
         max:1000,
@@ -100,7 +117,9 @@ app.delete('/deleteObj/:id', express.json(), async (req, res) => {
 app.post('/create-Container', function (req, res) {
     const containerInfo = {
         name: req.body.name,
-        capacity: (req.body.length * req.body.width * req.body.height),
+        length: req.body.length,
+        width: req.body.width,
+        height: req.body.height,
         fulfilled: 0, //empty upon creation
         contents: [] //empty array upon creation
     }
@@ -124,7 +143,8 @@ app.post('/create-Rock', function (req, res) {
         totalWeight: req.body.totalWeight,
         amount: req.body.amount,
         processed: req.body.processed,
-        url: req.body.url
+        url: req.body.url,
+        choice: req.body.choice
     }
 
     console.log(rockInfo)
@@ -140,3 +160,32 @@ app.post('/create-Rock', function (req, res) {
     })
 
 });
+
+app.get("/get-all-containers", function (req, res) {
+    Container.find().then(containers => {
+        res.send({
+            "message": "success",
+            "data": containers,
+        })
+    }).catch(err => {
+        res.send({
+            "message": err.message,
+            "data": []
+        })
+    })
+});
+
+app.get("/get-all-rocks", function (req, res) {
+    Rock.find().then(rocks => {
+        res.send({
+            "message": "success",
+            "data": rocks,
+        })
+    }).catch(err => {
+        res.send({
+            "message": err.message,
+            "data": []
+        })
+    })
+});
+

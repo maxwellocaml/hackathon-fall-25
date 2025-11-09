@@ -137,48 +137,15 @@
                             </script>
                             <p id="errorTextObject" style="color: red; opacity: 0;">cool text</p>
                         </form>
-                        <h5>Search</h5>
-                        <!-- search box-->
-                        <div class="input-group mb-3">
-                            <input id="search_box" type="search" class="form-control" placeholder="Search cars..." aria-label="Search"
-                                   aria-describedby="basic-addon2" onsearch="update_cars()">
-                            <span class="input-group-text" id="basic-addon2"><i class="fas fa-search"></i></span>
-                        </div>
 
-                        <!-- like and dislike radio buttons-->
-                        <div>
-                            <h5>Filter</h5>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="like_dislikes" id="all_cars" value="all"
-                                       onclick="update_cars(true,false,false)"
-                                       checked>
-                                <label class="form-check-label" for="all_cars">
-                                    All cars
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="like_dislikes" id="all_likes" value="like"
-                                       onclick="update_cars(false,true,false)">
-                                <label class="form-check-label" for="all_likes">
-                                    Likes
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="like_dislikes" id="all_dislikes" value="dislike"
-                                       onclick="update_cars(false,false,true)">
-                                <label class="form-check-label" for="all_dislikes">
-                                    Dislikes
-                                </label>
-                            </div>
-                        </div>
 
-                        <!-- brand list-->
                         <div>
-                            <h5>All brands</h5>
-                            <div id = 'container' style=" height: 2000px; overflow: auto">
-                                <ul id="item_section">
-                                </ul>
-                            </div>
+                            <p id="itemName"></p>
+                            <p id="itemInfo"></p>
+<!--                            <p id="itemName"></p>-->
+<!--                            <p id="itemName"></p>-->
+<!--                            <p id="itemName"></p>-->
+<!--                            <p id="itemName"></p>-->
                         </div>
                     </div>
             </div>
