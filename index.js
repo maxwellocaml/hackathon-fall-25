@@ -7,37 +7,53 @@ import { ViewportGizmo } from "three-viewport-gizmo";
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { loadThreeModel } from "/public/js/models.js";
 import {RGBELoader} from "three/addons/loaders/RGBELoader";
-import {Mesh, DoubleSide, MeshPhysicalMaterial, BoxGeometry, ReinhardToneMapping} from "three";
-import {OutlinePass} from "three/addons/postprocessing/OutlinePass.js";
-import {FXAAShader} from "three/addons/shaders/FXAAShader.js";
-import {EffectComposer, RenderPass, ShaderPass} from "three/addons";
+import {Mesh, DoubleSide,  GridHelper, MeshPhysicalMaterial, BoxGeometry, ReinhardToneMapping, Cache as controls} from "three";
+import { TeapotGeometry } from 'three/addons/geometries/TeapotGeometry.js';
 
 // Initialize Gird
 const resizableGrid = initGrid();
 const canvasContainer = document.querySelector("#canvas-container");
 
-//initialize scene variables
-//scene
-const scene = new THREE.Scene();
-//scene.background = new THREE.Color(0xADD8E6); // Light blue color
-
-//camera
+//CAMERA
 const camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
-    0.1,
-    1000
+    0.1, //near
+    1000 //far
 );
-//renderer
+
+
+//RENDERER
 const renderer = new THREE.WebGLRenderer({antialias: true});
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(
     canvasContainer.clientWidth,
     canvasContainer.clientHeight
 );
-renderer.setPixelRatio(window.devicePixelRatio);
+//renderer.shadowMap.enabled = true;
 //renderer.toneMapping = ReinhardToneMapping;
 renderer.setAnimationLoop(animate);
 canvasContainer.appendChild( renderer.domElement );
+
+//WINDOW RESIZE HANDLING
+window.addEventListener('resize', resize)
+function resize() {
+    const [width, height] = [
+        canvasContainer.clientWidth,
+        canvasContainer.clientHeight,
+    ];
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+    gizmo.update();
+}
+
+
+//SCENE
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000); // Light blue color
+
+
 
 //https://cloud.needle.tools/hdris?img=Photo+Studio+Loft+Hall
 // Initialize KTX2 loader. The transcoder path can come from three.js or Needle.
@@ -54,11 +70,8 @@ ktx2Loader.load('https://cdn.needle.tools/static/hdris/photo_studio_loft_hall_2k
     scene.backgroundBlurriness = 0.08;
 });
 
-//threemodel is imported from seperate js file which can import many objects at once
-const [threeModel, threeModelAnimation] = loadThreeModel(scene, renderer);
-scene.add(threeModel);
 
-
+//CONTROLS
 // Init Gizmo with OrbitControls
 const gizmo = new ViewportGizmo(camera, renderer, {
     container: canvasContainer,
@@ -70,125 +83,215 @@ camera.position.set(5, 5, 5);
 gizmo.target.set(0, 0, 0);
 camera.lookAt(gizmo.target);
 
-let INTERSECTED;
-
-const mouse = new THREE.Vector2();
-const raycaster = new THREE.Raycaster();
-
-const composer = new EffectComposer(renderer);
-const renderPass = new RenderPass(scene, camera);
-
-composer.addPass(renderPass);
-
-const outline = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
-outline.edgeThickness = 5.0;
-outline.edgeStrength = 5.0;
-outline.visibleEdgeColor.set(0xffffff);
-
-composer.addPass(outline);
-
-const textureLoader = new THREE.TextureLoader();
-textureLoader.load("/assets/tri_pattern.jpg", function(texture){
-    if (texture) {
-        outline.patternTexture = texture;
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-    }
+const materialContainer = new MeshPhysicalMaterial({
+    color: 0x1e2742,
+    transparent: true,
+    opacity: 0.6,
+    side: DoubleSide,
+    metalness: 0,
+    roughness: 0.5,
+    ior: 1.5,
+    sheen: 0.2,
+    sheenRoughness: 0.8,
 });
 
-// const fxaaShader = new ShaderPass(FXAAShader);
-// fxaaShader.uniforms["resolution"].value.set(1 / window.innerWidth, 1 / window.innerHeight);
-// composer.addPass(fxaaShader);
-
-const selectedObjects = [];
-
-function addSelectedObjects(object){
-    if (selectedObjects.length > 0) {
-        selectedObjects.pop();
-    }
-    selectedObjects.push(object);
+// GRIDHELPER
+function createFloor() {
+    const floor = new GridHelper(100, 50, 0x111111, 0x111111);
+    scene.add(floor);
+    floor.userData.ground = true;
 }
 
-function intersection(){
-    raycaster.setFromCamera(mouse,camera);
-    const intersects = raycaster.intersectObjects(scene.children, false);
+function createContainer(sx, sy, sz, px, py, pz) {
+    let rect = new THREE.Mesh(new THREE.BoxGeometry(), materialContainer);
+    rect.scale.set(sx, sy, sz);
+    rect.position.set(px, py, pz);
+    //rect.castShadow = true;
+    //rect.receiveShadow = true;
+    scene.add(rect);
 
-    if ( intersects.length > 0 ) {
-        if ( INTERSECTED !== intersects[0].object && intersects[0].object.type === "Mesh" ) {
-            INTERSECTED = intersects[0].object;
-            addSelectedObjects(INTERSECTED);
+    rect.userData.draggable = true;
+    rect.userData.isContainer = true;
+    rect.userData.capacity = sx * sy * sz;
+    rect.userData.fulfilled = 0;
+    rect.userData.contents = [];
+    rect.userData.name = "CONTAINER"
 
-            console.log(selectedObjects);
-            outline.selectedObjects = selectedObjects;
-
-            //console.log(INTERSECTED);
-            console.log(INTERSECTED);
-        }
-    } else {
-        INTERSECTED = null;
-    }
+    return rect;
 }
 
+function createObject(px, py, pz) {
+    const choice = Math.floor(Math.random() * 13);
+    console.log(choice);
+    let geometry;
+    let geometryType;
+    switch(choice) {
+        case 0: //CUBE
+            geometry = new THREE.BoxGeometry( 1, 1, 1 );
+            geometryType = "cube"
+            break;
+        case 1: //TRIANGULAR CONE
+            geometry = new THREE.ConeGeometry(0.75, 1, 3);
+            geometryType = "triCone"
+            break;
+        case 2: //QUAD CONE
+            geometry = new THREE.ConeGeometry(0.75, 1, 4);
+            geometryType = "quadCone"
+            break;
+        case 3: //8 CONE
+            geometry = new THREE.ConeGeometry(0.5, 1, 8);
+            geometryType = "eightCone"
+            break;
+        case 4: // PENTAGON CYLINDER
+            geometry = new THREE.CylinderGeometry( 0.25, 0.75, 1, 5 );
+            geometryType = "pentCylinder"
+            break;
+        case 5: //12side CYLINDER
+            geometry = new THREE.CylinderGeometry( 0.25, 0.75, 1, 12 );
+            geometryType = "twelveCylinder"
+            break;
+        case 6: //DODECAHEDRON
+            geometry = new THREE.DodecahedronGeometry( 0.75 );
+            geometryType = "dodecahedron"
+            break;
+        case 7: //ICOSAHEDRON
+            geometry = new THREE.IcosahedronGeometry( 0.75 );
+            geometryType = "icosahedron"
+            break;
+        case 8: //OCTAHEDRON
+            geometry = new THREE.OctahedronGeometry( 0.75 );
+            geometryType = "octahedron"
+            break;
+        case 9: //SPHERE
+            geometry = new THREE.SphereGeometry( 0.75, 12, 8 );
+            geometryType = "sphere"
+            break;
+        case 10: //TORUS
+            geometry = new THREE.TorusGeometry( 0.3, 0.3, 6, 12 );
+            geometryType = "torus"
+            break;
+        case 11: //KNOTTED TORUS
+            geometry = new THREE.TorusKnotGeometry( 0.25, 0.25, 8, 40, 2, 3 );
+            geometryType = "knottedTorus"
+            break;
+        case 12: //UTAH TEAPOT
+            geometry = new TeapotGeometry( 0.5, 10 )
+            geometryType = "teapot"
+            break;
+        default:
+            geometry = new THREE.BoxGeometry( 1, 1, 1 );
+            geometryType = "cube"
+    }
 
-function mouseMove(){
+    const materialObject = new MeshPhysicalMaterial({
+        color: Math.random() * 0xffffff,
+        opacity: 1,
+        metalness: 0,
+        roughness: 0.5,
+        clearcoat: 0.5,
+        clearcoatRoughness: 0.2,
+        ior: 1.2,
+        sheen: 0.2,
+        sheenRoughness: 0.8,
+    });
+    let obj = new THREE.Mesh(geometry, materialObject);
+    obj.position.set(px, py, pz);
+
+    scene.add(obj);
+
+    obj.userData.draggable = true;
+    obj.userData.isObject = true;
+    obj.userData.capacity = 1;
+    obj.userData.name = geometryType;
+    return obj;
+}
+
+const raycaster = new THREE.Raycaster();
+const clickMouse = new THREE.Vector2();
+const moveMouse = new THREE.Vector2();
+let draggable; //THREE.Object3D
+
+canvasContainer.addEventListener('click', event => {
     event.preventDefault();
-    mouse.x = (event.clientX /  window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    intersection();
-    composer.render();
-}
-
-//window.addEventListener("resize", resize);
-renderer.domElement.style.touchAction = "none";
-renderer.domElement.addEventListener("mousemove", mouseMove);
-
-function render(){
-    const intersects = raycaster.intersectObjects( scene.children );
-    try {
-        intersects[0].object.material.color.set( Math.random() * 0xff0000 );
-    } catch (e) {
-        console.error(e);
+    if (draggable) {
+        console.log("dropping draggable " +draggable.userData.name);
+        draggable = null;
+        return;
     }
-    // for (let i = 0; i < intersects.length; i++) {
-    //     //console.log(intersects[i].object.name)
-    //     intersects[i].object.material.color.set( Math.random() * 0xff0000 );
-    // }
-    //renderer.render(scene, camera);
-    composer.render();
-    requestAnimationFrame(render);
+
+    //because the canvas doesn't take up the full screen, we need to offset it when normalizing mouse screen coords
+    const offsetWidth = (window.innerWidth - canvasContainer.clientWidth);
+    const offsetHeight = (window.innerHeight - canvasContainer.clientHeight);
+    clickMouse.x = ( (event.clientX - offsetWidth) / canvasContainer.clientWidth) * 2 -1;
+    clickMouse.y = - ( (event.clientY - offsetHeight) / canvasContainer.clientHeight) * 2 +1;
+    console.log("x : " + clickMouse.x + " y : " + clickMouse.y);
+
+
+    raycaster.setFromCamera(clickMouse, camera);
+    const found = raycaster.intersectObjects(scene.children, true);
+    //Gridhelper messes up most raycastings, so filter returned array to only include mesh objects
+    const foundFiltered = found.filter(function (el) {
+        return el.object.isMesh === true;
+    });
+    console.log(foundFiltered)
+
+    if (foundFiltered.length > 0 && foundFiltered[0].object.userData.draggable) {
+        draggable = foundFiltered[0].object;
+        console.log(`found draggable ${draggable.userData.name}`)
+    }
+})
+
+canvasContainer.addEventListener('mousemove', event => {
+    //because the canvas doesn't take up the full screen, we need to offset it when normalizing mouse screen coords
+    const offsetWidth = (window.innerWidth - canvasContainer.clientWidth);
+    const offsetHeight = (window.innerHeight - canvasContainer.clientHeight);
+    moveMouse.x = ( (event.clientX - offsetWidth) / canvasContainer.clientWidth) * 2 -1;
+    moveMouse.y = - ( (event.clientY - offsetHeight) / canvasContainer.clientHeight) * 2 +1;
+    //console.log("x : " + moveMouse.x + " y : " + moveMouse.y);
+})
+
+function dragObject () {
+    if (draggable !== null) {
+        console.log("draggable");
+        raycaster.setFromCamera(moveMouse, camera);
+        const found = raycaster.intersectObjects(scene.children, true);
+        if (found.length > 0) {
+            for(let o of found) {
+                if(!o.object.userData.ground)
+                    continue
+                draggable.position.x = o.point.x;
+                draggable.position.z = o.point.z;
+            }
+        }
+    }
 }
 
+createFloor();
+createContainer(2, 1, 3);
+for(let i = 0; i < 10; i++) {
+    createObject(i, 1, 0)
+}
+const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 5);
+scene.add(hemiLight);
 
 
 
-
-//animation/render loop
+// ANIMATION LOOP
 function animate(time) {
     renderer.autoClear = false;
     renderer.clear();
     renderer.setPixelRatio(window.devicePixelRatio);
     //renderer.toneMapping = THREE.REINHARD_TONE_MAPPING;
-    render();
-
+    renderer.render(scene, camera);
     // Render the Gizmo
     gizmo.render();
-}
+    requestAnimationFrame((t) => animate(t));
+    // try {
+    //     requestAnimationFrame(callback);
+    // } catch (e) {}
 
 
-//refresh the size of the content when window size is affected
-window.onresize = resize;
-function resize() {
-    const [width, height] = [
-        canvasContainer.clientWidth,
-        canvasContainer.clientHeight,
-    ];
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-    composer.setSize(width, height);
-    //fxaaShader.uniforms["resolution"].value.set(1 / width, 1 / height);
-    gizmo.update();
 }
 
 function initGrid() {
@@ -371,4 +474,35 @@ function getGizmoConfig() {
     };
 
     return darkCubeConfig;
+}
+
+//not called directly because index4 is a module js when referred to by index.html
+export function onCreateContainer() {
+    console.log("creating container");
+    const containerName = document.getElementById("containerName").value
+    const containerHeight = document.getElementById("containerHeight").value
+    const containerWidth = document.getElementById("containerWidth").value
+    const containerLength = document.getElementById("containerLength").value
+    console.log(containerName);
+    console.log(containerHeight);
+    console.log(containerWidth);
+    console.log(containerLength);
+
+
+    const container = createContainer(containerWidth, containerHeight, containerLength, 1, 1, 1);
+
+    $.post('/create-Container', {
+        //_id: container.uuid,
+        name: containerName,
+        height: containerHeight,
+        width: containerWidth,
+        length: containerLength
+    }).done(function (data) {
+            console.log(data.message);
+            if(data.message==='success') {
+                scene.add(container);
+                //renderer.render(scene, camera);
+            }
+        })
+
 }

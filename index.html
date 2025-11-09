@@ -29,6 +29,21 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     <script src="/public/js/userEditItems.js" defer></script>
+    <script type="module" src="/index.js" defer></script>
+
+    <script type="module">
+        // Fetch data from the Node.js API
+        fetch('/create-Container')
+            .then((res) => res.json())
+            .then((data) => {
+                document.getElementById('app').textContent = data.message;
+            });
+        fetch('/api')
+            .then((res) => res.json())
+            .then((data) => {
+                document.getElementById('app').textContent = data.message;
+            });
+    </script>
 
 
 </head>
@@ -38,28 +53,44 @@
             <div class="cell"><span></span>
                     <div id="selection_section">
 
-
-                        <form id="createContainerForm" action="/createContainer" method="POST">
+                        <form id="createContainerForm" >
                             <div class="input-group mb-3">
-                                <span class="input-group-text">Name</span>
-                                <input type="text" id="nameContainer" class="form-control" aria-describedby="inputGroup-sizing-default">
+                                <span class="input-group-text">Name:</span>
+                                <input type="text" id="containerName" name="containerName" class="form-control" aria-describedby="inputGroup-sizing-default" required >
                             </div>
                             <div class="input-group mb-3 input-group-sm ">
                                 <span class="input-group-text" >Ht</span>
-                                <input type="number" id="heightContainer" class="form-control" placeholder="In"  aria-describedby="inputGroup-sizing-default">
+                                <input type="number" min="0" step="1"
+                                       id="containerHeight" name="containerHeight"
+                                       class="form-control" placeholder="In"
+                                       required
+                                       aria-describedby="inputGroup-sizing-default">
 
                                 <span class="input-group-text">Lt</span>
-                                <input type="number" id="lengthContainer" class="form-control" placeholder="In" aria-describedby="inputGroup-sizing-default">
+                                <input type="number" min="0" step="1"
+                                       id="containerLength" name="containerLength"
+                                       class="form-control" placeholder="In"
+                                       required
+                                       aria-describedby="inputGroup-sizing-default">
 
                                 <span class="input-group-text">Wt</span>
-                                <input type="number" id="widthContainer" class="form-control" placeholder="In" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                                <input type="number" min="0" step="1"
+                                       id="containerWidth" name="containerWidth"
+                                       class="form-control" placeholder="In"
+                                       required
+                                       aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                             </div>
-                            <button type="submit" class="btn btn-primary" style="width:100%;">CreatObj</button>
-                            <p id="errorText" style="color: red; opacity: 0;">cool text</p>
+                            <button id="createContainerBtn" type="submit" class="btn btn-primary" style="width:100%;">Create Container</button>
+                            <script type="module">
+                                import {onCreateContainer} from '/index.js'
+
+                                document.querySelector('#createContainerForm').addEventListener('submit', onCreateContainer)
+                            </script>
+                            <p id="errorTextContainer" style="color: red; opacity: 0;">cool text</p>
                         </form>
 
 
-                        <form id="userInputSec">
+                        <form id="userInputSec" action="/create-Object" method="POST">
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Name</span>
                                 <input type="text" id="name" class="form-control" aria-describedby="inputGroup-sizing-default">
@@ -74,8 +105,8 @@
                                 <span class="input-group-text">Wt</span>
                                 <input type="number" id="width" class="form-control" placeholder="In" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                             </div>
-                            <button type="submit" class="btn btn-primary" style="width:100%;">CreatObj</button>
-                            <p id="errorText" style="color: red; opacity: 0;">cool text</p>
+                            <button id="createObjectBtn" type="submit" class="btn btn-primary" style="width:100%;">Create Object</button>
+                            <p id="errorTextObject" style="color: red; opacity: 0;">cool text</p>
                         </form>
                         <h5>Search</h5>
                         <!-- search box-->
@@ -135,8 +166,6 @@
             </div>
         </div>
     </div>
-
-    <script type="module" src="/index4.js"></script>
-<!--    <h1>Collection File Structure demo</h1>-->
+<!--    <script type="module" src="/index.js"></script>-->
 </body>
 </html>
